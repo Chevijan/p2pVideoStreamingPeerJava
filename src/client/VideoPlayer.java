@@ -7,18 +7,15 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.discovery.NativeDiscovery;
-import uk.co.caprica.vlcj.player.MediaPlayer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
+import java.awt.FlowLayout;
 
 public class VideoPlayer extends JFrame {
 
@@ -72,51 +69,9 @@ public class VideoPlayer extends JFrame {
 		});
 		//-------------------------------------------------------------------------------
 
-
-		//----------------Adding event handlers---------------------------------
-		mediaPlayerComponent = new EmbeddedMediaPlayerComponent(){
-
-
-			@Override
-			public void error(MediaPlayer mediaPlayer) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						JOptionPane.showMessageDialog(
-								frame,
-								"Failed to play media",
-								"Error",
-								JOptionPane.ERROR_MESSAGE
-								);
-
-					}
-				});
-			}
-
-			@Override
-			public void finished(MediaPlayer mediaPlayer) {
-
-			}
-
-			@Override
-			public void playing(MediaPlayer mediaPlayer) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						frame.setTitle(String.format(
-								"My First Media Player - %s",
-								mediaPlayerComponent.getMediaPlayer().getMediaMeta().getTitle()
-								));
-					}
-				});
-			}
-
-		};
-
-
+		//---------------Creating media player component---------------------
+		mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
 		//-------------------------------------------------------------------
-
-
 
 		contentPane.add(mediaPlayerComponent, BorderLayout.CENTER);
 
@@ -124,6 +79,13 @@ public class VideoPlayer extends JFrame {
 		setVisible(true);
 
 		JPanel controlsPane = new JPanel();
+		controlsPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		
+		//-----------------------------------------------------------
+
+		contentPane.add(controlsPane, BorderLayout.SOUTH);
+
 
 		//---------------pause button action listener----------------
 		pauseButton = new JButton("Pause");
@@ -158,9 +120,6 @@ public class VideoPlayer extends JFrame {
 			}
 		});
 		controlsPane.add(skipButton);
-		//-----------------------------------------------------------
-
-		contentPane.add(controlsPane, BorderLayout.SOUTH);
 
 		//----------------Streaming video with this location-------------------
 		mediaPlayerComponent.getMediaPlayer().playMedia("D:\\Videos\\ZlatanIbrahimovicTop50.mp4");
@@ -170,3 +129,8 @@ public class VideoPlayer extends JFrame {
 
 
 }
+
+
+
+
+

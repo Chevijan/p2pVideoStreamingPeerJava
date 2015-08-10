@@ -47,6 +47,10 @@ public class ClientApp extends JFrame {
 		peer.SendMeta();
 		//-----------------------------------------------------
 
+		//------------Starts reading for ip-adresses-----------
+		peer.receiveIpsWithVideo();
+		//-----------------------------------------------------
+
 	}
 
 	/**
@@ -67,13 +71,35 @@ public class ClientApp extends JFrame {
 
 		//----------------Creating the frame with video player using button--------------------
 		//----------------This should happen after choosing the video--------------------------
-		JButton btnNewButton = new JButton("New button");
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton btnMovie1 = new JButton("Movie1");
+		btnMovie1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				VideoPlayer.NewWindow();
+				Peer.setRequestForVideo("ZlatanIbrahimovicTop50.mp4");
+				Peer.SendRequestForVideo();
 			}
 		});
-		panel.add(btnNewButton);
+		panel.add(btnMovie1);
+
+		JButton btnMovie2 = new JButton("Movie2");
+		btnMovie2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				VideoPlayer.NewWindow();
+				Peer.setRequestForVideo("Alice_In_Chains_-_Would.mp4");
+				Peer.SendRequestForVideo();
+			}
+		});
+		panel.add(btnMovie2);
+
+		JButton btnMovie3 = new JButton("Movie3");
+		btnMovie3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				VideoPlayer.NewWindow();
+				Peer.setRequestForVideo("Lilly_Wood__The_Prick_and_Robin_Schulz_-_Prayer_In_C_(Robin_Schulz_Remix)_(Official).mp4");
+				Peer.SendRequestForVideo();
+			}
+		});
+		panel.add(btnMovie3);
 		//-------------------------------------------------------------------------------------
 
 		//-------------Adding what happens when we close the widnow---------------
@@ -85,5 +111,6 @@ public class ClientApp extends JFrame {
 		});
 		//----------------------------------------------------------------------
 	}
+
 
 }

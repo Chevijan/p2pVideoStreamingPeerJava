@@ -12,11 +12,24 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.ServerSocket;
 
 public class ClientApp extends JFrame {
 
+	// *****variables for creating window (GUI)*****
 	private JPanel contentPane;
 	private static ClientApp frame;
+	
+
+	// *****String requestForVideo which cooperates with buttons*****
+	private static String requestForVideo = "";
+
+	// *****Thread which starts Server on peer*****
+	private static Thread threadForServerStarting;
+	
+	//*****Socket for messages of list updating server - peer*****
+	private static Thread liveUpdaterThread;
+
 
 	/**
 	 * Launch the application.
@@ -33,24 +46,31 @@ public class ClientApp extends JFrame {
 			}
 		});
 
-		//----------Connecting peer to server -----------------
-		Peer peer = new Peer();
-		peer.ConnectToServer();
-		//-----------------------------------------------------
+		// *****Initializing instance of PToSCommunication*****
+		PToSCommunication pToSCommunication = new PToSCommunication();
 
-		//-----------Setting up streams------------------------
-		peer.SetupStreams();
-		//-----------------------------------------------------
+		// *****Connecting peer to server with given ip adress and port*****
+		pToSCommunication.ConnectToServer("localhost", 7812);
 
-		//------------Various methods-------------------------
-		peer.GetMetadata();
-		peer.SendMeta();
-		//-----------------------------------------------------
+		// *****Starting a thread where client becomes server for other
+		// peers*****
+		ClientAsAServer cs = new ClientAsAServer();
+		threadForServerStarting = new Thread(cs);
+		threadForServerStarting.start();
 
-		//------------Starts reading for ip-adresses-----------
-		peer.receiveIpsWithVideo();
-		//-----------------------------------------------------
-
+		// *****Setting up streams for communication*****
+		pToSCommunication.SetupStreams();
+		
+		// *****Sending meta data from peer to server. Server uses that
+		// data for completing the list of ip-scurrently connected*****
+		pToSCommunication.SendMeta(pToSCommunication.GetMetadata());
+		
+		//*****Starting a thread for live updating list of ips
+		//	 for connection on other peers*****
+		LiveUpdater LU = new LiveUpdater();
+		liveUpdaterThread = new Thread(LU);
+		liveUpdaterThread.start();
+		
 	}
 
 	/**
@@ -69,48 +89,84 @@ public class ClientApp extends JFrame {
 		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.CENTER);
 
-		//----------------Creating the frame with video player using button--------------------
-		//----------------This should happen after choosing the video--------------------------
+		// *****Buttons for choosing videos by sending request to server
+		// and receiving list of ip adresses of peers which have that video*****
+		// 1
 		JButton btnMovie1 = new JButton("Movie1");
 		btnMovie1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				VideoPlayer.NewWindow();
-				Peer.setRequestForVideo("ZlatanIbrahimovicTop50.mp4");
-				Peer.SendRequestForVideo();
+				setRequestForVideo("ZlatanIbrahimovicTop50.mp4");
+				PToSCommunication.SendRequestForVideo(requestForVideo);
+				
+				//*****Connecting to peers when button is presse
+				// if list with ip adresses which server sends to peer
+				// is not empty*****
+				PToSCommunication.ConnectToPeers();
 			}
 		});
 		panel.add(btnMovie1);
 
+		// 2
 		JButton btnMovie2 = new JButton("Movie2");
 		btnMovie2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				VideoPlayer.NewWindow();
-				Peer.setRequestForVideo("Alice_In_Chains_-_Would.mp4");
-				Peer.SendRequestForVideo();
+				setRequestForVideo("Alice_In_Chains_-_Would.mp4");
+				PToSCommunication.SendRequestForVideo(requestForVideo);
+				
+				//*****Connecting to peers when button is presse
+				// if list with ip adresses which server sends to peer
+				// is not empty*****
+				PToSCommunication.ConnectToPeers();
 			}
 		});
 		panel.add(btnMovie2);
 
+		// 3
 		JButton btnMovie3 = new JButton("Movie3");
 		btnMovie3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				VideoPlayer.NewWindow();
-				Peer.setRequestForVideo("Lilly_Wood__The_Prick_and_Robin_Schulz_-_Prayer_In_C_(Robin_Schulz_Remix)_(Official).mp4");
-				Peer.SendRequestForVideo();
+				setRequestForVideo(
+						requestForVideo = "Lilly_Wood__The_Prick_and_Robin_Schulz_-_Prayer_In_C_(Robin_Schulz_Remix)_(Official).mp4");
+				PToSCommunication.SendRequestForVideo(requestForVideo);
+				
+				//*****Connecting to peers when button is presse
+				// if list with ip adresses which server sends to peer
+				// is not empty*****
+				PToSCommunication.ConnectToPeers();
 			}
 		});
 		panel.add(btnMovie3);
-		//-------------------------------------------------------------------------------------
 
-		//-------------Adding what happens when we close the widnow---------------
+		// *****Action listener for closing window.
+		// Peer disconnects on window close*****
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				Peer.DisconnectPeer();
+				PToSCommunication.DisconnectPeer();
+				System.exit(-1);
 			}
 		});
-		//----------------------------------------------------------------------
 	}
 
+	// *****Getters and setters*****
+	
+	public static String getRequestForVideo() {
+		return requestForVideo;
+	}
 
+	public static void setRequestForVideo(String requestForVideo) {
+		ClientApp.requestForVideo = requestForVideo;
+	}
+
+	public static Thread getThreadForServerStarting() {
+		return threadForServerStarting;
+	}
+
+	public static void setThreadForServerStarting(Thread threadForServerStarting) {
+		ClientApp.threadForServerStarting = threadForServerStarting;
+	}
 }
+
